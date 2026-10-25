@@ -1,0 +1,68 @@
+# =====================================================
+# AL AI Platform Admin
+# API: 全 POST + @RequestBody，路径 /api/admin/{模块}/{操作}
+# =====================================================
+
+server:
+  port: 8282
+
+spring:
+  application:
+    name: al-ai-platform-langchain4j-admin
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+  datasource:
+    # 默认地址 aliyun-2c2g:3307；账密由 profile（application-local.yml）或环境变量提供
+    # common=平台通用能力；user=账号会话；biz=业务数据（后续启用）
+    common:
+      url: jdbc:mysql://${ALAI_DB_HOST:aliyun-2c2g}:${ALAI_DB_PORT:3307}/al-ai-platform-common?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&forceConnectionTimeZoneToSession=true
+      username: ${ALAI_DB_USER:root}
+      password: ${ALAI_DB_PASSWORD:}
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      hikari:
+        max-lifetime: 580000
+        idle-timeout: 520000
+        connection-timeout: 30000
+        keepalive-time: 60000
+        connection-init-sql: SET time_zone = '+08:00'
+    user:
+      url: jdbc:mysql://${ALAI_DB_HOST:aliyun-2c2g}:${ALAI_DB_PORT:3307}/al-ai-platform-user?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&forceConnectionTimeZoneToSession=true
+      username: ${ALAI_DB_USER:root}
+      password: ${ALAI_DB_PASSWORD:}
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      hikari:
+        max-lifetime: 580000
+        idle-timeout: 520000
+        connection-timeout: 30000
+        keepalive-time: 60000
+        connection-init-sql: SET time_zone = '+08:00'
+    # biz 数据源：业务表就绪后再启用 spring.datasource.biz
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+
+alai:
+  # 登录密码传输：前端 RSA 公钥加密，后端私钥解密（Base64 DER）
+  crypto:
+    rsa:
+      public-key: ${ALAI_RSA_PUBLIC_KEY:MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA020JfFmdi0HY6xHB5CjdXCkUQg4EcFl+vPEkJjDJHbCMGhrhAw0wvRlrPiBeDUOQUDzcGhQWWDhodUkfiis0pGtBDNMDs4af+C0JQV+xtVTElAIsHitlzGWBw2FCJZkbRysQgtr6+ZmlXquC5ZoKnglhfJYADccDTnMOFbokILOFfgODG7Pplz2pf/lyOVkuV/6ULZY4VhXQ3XaOkf4V2jcm2Ecae6xDQ6CgLlHuo9/1Eh3MM+uKFtJEOAuHrVezbePlje5eaRrud/bJIdoSAQohgULchxPg+YFWdUZD2OLe5QTd5pAbIYq2FdLodE1ssCQyBgF//t4/hAopFvi84QIDAQAB}
+      private-key: ${ALAI_RSA_PRIVATE_KEY:MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDTbQl8WZ2LQdjrEcHkKN1cKRRCDgRwWX688SQmMMkdsIwaGuEDDTC9GWs+IF4NQ5BQPNwaFBZYOGh1SR+KKzSka0EM0wOzhp/4LQlBX7G1VMSUAiweK2XMZYHDYUIlmRtHKxCC2vr5maVeq4LlmgqeCWF8lgANxwNOcw4VuiQgs4V+A4Mbs+mXPal/+XI5WS5X/pQtljhWFdDddo6R/hXaNybYRxp7rENDoKAuUe6j3/USHcwz64oW0kQ4C4etV7Nt4+WN7l5pGu539skh2hIBCiGBQtyHE+D5gVZ1RkPY4t7lBN3mkBshirYV0uh0TWywJDIGAX/+3j+ECikW+LzhAgMBAAECggEAL8jJCA3JCZxMRnSw+bwyq42tQnCgmDPh7RojLW6BRfCM+alxiZsFlPeVwWjXWPAYQco/hLVdh3rYQQnR0wyIzVBgV2GpyH140kJ7gQb7xxvtgfYrunXcgCHA/kORC6Za/+6/wJN1fcw4D/l7kCEMnUNJgTr1sCd2m9htKoPzfmArM0jIfWm2EuE0dVVy84tlRDwNntAAFUsBCN2kgCdNWjy+Mvp1ALTVOhMFB/mB8ip+WCy/7B8K0Hhl6AkHYbBPlCiJvbmGdz5qrYhSd9v2fbR0+2lN3i0P10aMIu4EvkpMtITx94Ul9yEiT4K8qYog+9FPRtK/+wKTX8btiMivMQKBgQD5mSa6av0uoPalQQM9S2NLOHgkwlpa2pdijugKluZ7wEigvulBEldYbfXzKHzdmz4n75HzVmOn2L8EvZ4FdtTDOeqHhwP1QGRtoXq1BKPlmeLnOFOz3aTCokxsC/IZoFQtGdM/V9MDiZuCRXc5U8u8aKdkObZBQ+1kKIIBa+PlawKBgQDY2T+UP9m4dogmxMVBbOrhihsKFt0ImWAKjMykgvE1AIYOXYVBZvMPfnxNkTrdz8wIZ7HwFDul94D9hIojzJrWIbiOhPVC6kU64D/ux3HLcw/z1yuyhbXx84tpUHkEvtSbAA1ZwxZ0pFMk3rhAGCmRwgVbhMZ2AZ6vfImnOVGt4wKBgQC4xBiZMw4M8HbkygWd4Cq2yiyV+ZFtZBdgjC1VeXNQ9HxPEkQVOYCTI4NH5xbX7U3Lvlqqaa8H1zlARyWtIdRKWJs2jEnvySUOytTNH4w8MPh49YdwxIhs1DwCV612LuthH5bzcw3vtnP5sXaaZ1+QL2CKnvY9xgz7cckbSETB1QKBgHK9ORQDWPtu1InW8hy1Oe8O+VG0WU40gYnziFC/7EtENKqjN2Aszg1zuuf8IW6+hdIotBE5U3p05K7AE6vvljoZa6MVnQTEGs+VWp7Ir2CcSGOYhcmXUHdui2S1LOOi6bH+LBJD1LzxOgE3S7y2TECQre8H6U8FemaWeeueu6ZLAoGBAOeq55ff7y31GP5XFvvPM6ko7aMEgZqrkwqZFid/5ENkeAw9DT3GEOO/y/3BApvGLI258y5DU8zuc7ysUsLVvasBczw6PvUolS81pskn9JH3V1pQPiHRlylWj0kE+TJxpiAogc8CxE6pJKzAQDbIzdatg7sqWdII7aXKJy238get}
+  # 管理端超管（写在配置，不依赖 DB；可用环境变量覆盖）
+  admin:
+    super:
+      username: ${ALAI_SUPER_USERNAME:superadmin}
+      password: ${ALAI_SUPER_PASSWORD:SuperAdmin@8282}
+      nickname: 超级管理员
+  llm:
+    default-base-url: ${ALAI_LLM_BASE_URL:http://127.0.0.1:11434/v1}
+    default-api-key: ${ALAI_LLM_API_KEY:sk-local}
+    default-model: ${ALAI_LLM_MODEL:qwen2.5}
+
+logging:
+  level:
+    root: INFO
+    com.al.ai.platform: DEBUG
